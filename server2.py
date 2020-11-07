@@ -9,6 +9,7 @@ host = '127.0.0.1'
 port = int(sys.argv[1]) 
 ThreadCount = 0
 usernames = set([])  # set
+tweet_message = ""
 try:
     ServerSocket.bind((host, port))
 except socket.error as e:
@@ -20,6 +21,7 @@ ServerSocket.listen(5)
 
 def threaded_client(connection):
     # ===================== lock ===========================
+    tweet_message = ""
     data = ''
     my_lock = threading.Lock()
     username = connection.recv(2048)          # username
@@ -34,14 +36,26 @@ def threaded_client(connection):
     my_lock.release()
     print(f'usernames: {usernames}')
 
-    connection.send(str.encode('Welcome to the Server\n'))
 
-    while data != b'e':
-        data = connection.recv(2048)        # may be 'e'
-        reply = 'Server Says: ' + data.decode('utf-8')
-        connection.send(str.encode(reply))
+    while True:
+        data = connection.recv(2048)        # may be 'exit'; can be tweet post
+        data = data.decode('utf-8')
+        # if exist
+        if data == "exit":
+            connection.send(str.encode("bye bye"))
+            break;
+        # if tweet 
+        if data[0:5] == 'tweet':
+            data_arr = data.split('#')
+            message_arr = data_arr[0].split('"')
+            tweet_message = message_arr[1]
+
+        reply = 'tweet_message: ' + tweet_message
+        print(f'reply: {reply}')
     connection.close()
 
+
+## =================================== mian loop: checking for new clients =======================================
 while True:
     Client, address = ServerSocket.accept()
     print('Connected to: ' + address[0] + ':' + str(address[1]))
