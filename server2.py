@@ -1,10 +1,9 @@
 import socketserver
 import weakref
-import os
 import threading
 import sys
 
-BUF_SIZE = 1024
+BUFFER_SIZE = 1024
 MAX_CONN = 5
 accepted_sockets = weakref.WeakSet()
 hashtag = {}
@@ -29,24 +28,27 @@ def spellingcheck():
     if (port > 65535 or port <= 0):
         sys.exit("Value for server port exceeds limit")
 
-class Handler(socketserver.BaseRequestHandler):
+class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         if count_connections(self) >= MAX_CONN:
             self.request.sendall('OFF Limit!'.encode('utf-8'))
         else:
             address,pid = self.client_address
             accepted_sockets.add(self.client_address)
-            print('%s connected!'%address)
+            print('server get connection!')
             while True:
-                data = self.request.recv(BUF_SIZE)
+                data = self.request.recv(BUFFER_SIZE)
                 if len(data)>0:
                     print('receive=',data.decode('utf-8'))
                     cur_thread = threading.current_thread()
                     self.request.sendall('response'.encode('utf-8'))
                     print('send:','response')
                 else:
-                    print('close')
+                    print('Empty Message')
                     break
+
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    pass
 
 def main():
     #check argument
@@ -56,10 +58,11 @@ def main():
     port = int(sys.argv[1])
     server_address = ('localhost', port)
 
-    try:
-        server = socketserver.ThreadingTCPServer(server_address, Handler)
-    except:
-        sys.exit("error")
+    server = ThreadedTCPServer(server_address, ThreadedTCPRequestHandler)
+
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
 
     #waiting for connection
     print('server listening at ' + str(port))
