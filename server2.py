@@ -1,12 +1,10 @@
 import socketserver
-import weakref
 import threading
 import sys
-import socket
 
 BUFFER_SIZE = 1024
 MAX_CONN = 5
-accepted_sockets = weakref.WeakSet()
+accepted_sockets = set()
 hashtag = {}
 users = {}
 message = {}
@@ -36,7 +34,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             self.request.sendall('OFF Limit!'.encode('utf-8'))
         else:
             address,pid = self.client_address
-            accepted_sockets.add(self.client_address)
+            accepted_sockets.add(address)
             print('server get connection!')
             while True:
                 data = self.request.recv(BUFFER_SIZE)
@@ -46,7 +44,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     self.request.sendall('response'.encode('utf-8'))
                     print('send:','response')
                 else:
-                    print('Empty Message')
                     break
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -63,19 +60,12 @@ def main():
     server = ThreadedTCPServer(server_address, ThreadedTCPRequestHandler)
 
     server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.daemon = False
-
-    try:
-        server_thread.start()
-    except KeyboardInterrupt:
-        sys.exit()
+    server_thread.start()
 
     #waiting for connection
     print('server listening at ' + str(port))
 
+
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        sys.exit("Server Closed by Admin")
+    main()
     
