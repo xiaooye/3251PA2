@@ -2,14 +2,15 @@ import sys
 import pickle
 import socket
 
-command = ['tweet', 'subscribe', 'unsubscribe', 'exit', 'timeline', 'getuser', 'gettweets']
 
+# ==============ip address check for validation===========================
 def valid_ip(host):
     ip_arr = host.split('.')
     if len(ip_arr) != 4:
         return False
 
     for i in ip_arr:
+        i = int(i)
         if i < 0 or i > 255:
             return False
     return True
@@ -18,22 +19,24 @@ def conenctionCheck(connection, argv):
     # username_valid = True
     # parameter_valid = True
     # error = False
+    print(argv)
     ##======================= number of parameter ==============
     if len(argv) != 4:
         sys.exit("Wrong number of parameters: “error: args should contain <ServerIP> <ServerPort> <Username>")
-        return False
+        sys.exit(1)
     ## ================================= ip error ===============
-    ip = argv[1]
-    if valid_ip(ip) == False:
+    if valid_ip(argv[1]) == False:
         print("error: server ip invalid, connection refused.")
-        return False
+        sys.exit(1)
     ## ================================ port error ===================
-    port = int(sys.argv[2])
+    ip = argv[1]
+    port = int(argv[2])
     try:
         connection.connect((ip, port))
     except:
         print("error: server port invalid, connection refused.")
-        return False
+        sys.exit(1)
+    return True
     ## ======================== check for username format ==========================
     # username = sys.argv[3]
     # if username.isalnum() == False:
@@ -46,7 +49,7 @@ def conenctionCheck(connection, argv):
     #     sys.exit("error: server ip invalid, connection refused.")
 
 
-
+# ===============check for valid hashtag======================
 def tagChecker(hashtag):
     tagList = []
     for tag in hashtag:
@@ -56,49 +59,67 @@ def tagChecker(hashtag):
 
     return tagList
 
-def tweet(command, message, hashtag, user, connection):
+
+def tweet(line, command, user, connection):
+
+    list = line.split("\"")
+    message = list[1]
+    hashtag = list[2].strip()
     tagList = tagChecker(hashtag)
 
-    if tagList:
+    if not tagList:
         print("hashtag illegal format, connection refused")
-        return 0
+        return 1
 
     if len(message) <= 0:
-        print("message format illegal")
-        return 0
+        print("message format illegal, connection refused.")
+        return 1
     elif len(message) > 150:
         print("message length illegal, connection refused.")
-        return 0
+        return 1
 
     tmp = (command, message, tagList, user)
     sendTweet = pickle.dump(tmp)
     connection.send(sendTweet)
+    return 0
 
-def subscribe(command, hashtag, connection, user): # for both subscribe and unsubscribe
+
+# =====================for both subscribe and unsubscribe========================
+def subscribe(command, hashtag, user, connection):
+
     tagList = tagChecker(hashtag)
+    if not tagList:
+        print("hashtag illegal format, connection refused")
+        return 1
     tmp = (command, tagList, user)
     subscribeSend = pickle.dump(tmp)
     connection.send(subscribeSend)
+    return 0
+
 
 def main(argv):
     user = argv[3]
     clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    connection = conenctionCheck(clientSocket, argv) # check connection error
+    # ================ check connection error ====================
+    connection = conenctionCheck(clientSocket, argv)
     if not connection:
         sys.exit(1)
-
-    # check duplicate username from server
+    # ================check duplicate username from server==============
     clientSocket.send(user.encode())
-    recvMsg = clientSocket.recv().decode() # reply from server whether username is duplicated
-    if recvMsg:
+    # ==========reply from server whether username is duplicated, 0 for duplicated, 1 otherwise==========
+    recvMsg = clientSocket.recv(1024).decode()
+    print(recvMsg)
+    if not int(recvMsg):
         print("error: username has wrong format, connection refused.")
         clientSocket.close()
         sys.exit(1)
 
-    inputList = []
+    print("type whatever you want")
+    # inputList = []
     for line in sys.stdin:
-        for x in line:
-            inputList.append(x)
+        print(line)
+        # for x in line:
+        #     inputList.append(x)
         # input = line.split('\"')
         # command = input[0].strip()
         #
@@ -110,36 +131,52 @@ def main(argv):
         # msg = input[1]
         #
         # hashtag = input[2].strip()
-
-        if x[0] == 'tweet' and len(x) == 3:
-            tweet(x[0], x[1], x[3], user, clientSocket)
-            clientSocket.recv().decode()
-        elif x[0] == 'subscribe' and len(x) == 2:
-            subscribe(x[0], x[1], user, clientSocket)
-            clientSocket.recv().decode()
-        elif x[0] == 'unsubscribe'and len(x) == 2:
-            subscribe(x[0], x[1], user, clientSocket)
-            clientSocket.recv().decode()
-        elif x[0] == 'timeline' and len(x) == 1:
-            tmp = (x[0], clientSocket)
+        x = line.split()
+        command = x[0]
+        if command == 'tweet':
+            # ==========tweet return 1 for error 0 otherwise==================
+            y = tweet(line, command, user, clientSocket)
+            if y:
+                continue
+            clientSocket.recv(1024).decode()
+            print()
+        elif command == 'subscribe' and len(x) == 2:
+            y = subscribe(command, x[1], user, clientSocket)
+            if y:
+                continue
+            clientSocket.recv(1024).decode()
+            print()
+        elif command == 'unsubscribe' and len(x) == 2:
+            y = subscribe(command, x[1], user, clientSocket)
+            if y:
+                continue
+            clientSocket.recv(1024).decode()
+            print()
+        elif command == 'timeline' and len(x) == 1:
+            tmp = (command, user)
             timelineSend = pickle.dump(tmp)
             clientSocket.send(timelineSend)
-            clientSocket.recv().decode()
-        elif x[0] == 'getuser'and len(x) == 1:
-            tmp = (x[0], clientSocket)
-            getuserSend = pickle.dump(tmp)
-            clientSocket.send(getuserSend)
-            clientSocket.recv().decode()
-        elif x[0] == 'gettweets' and len(x) == 1:
-            tmp = (x[0], x[1], clientSocket)
+            clientSocket.recv(1024).decode()
+            print()
+        elif command == 'getuser' and len(x) == 1:
+            # tmp = (command, user)
+            # getuserSend = pickle.dump(tmp)
+            clientSocket.send(command.encode())
+            clientSocket.recv(1024).decode()
+            print()
+        elif command == 'gettweets' and len(x) == 2:
+            tmp = (command, user)
             gettweetSend = pickle.dump(tmp)
             clientSocket.send(gettweetSend)
-            clientSocket.recv().decode()
-        elif x[0] == 'exit'and len(x) == 1:
+            clientSocket.recv(1024).decode()
+            print()
+        elif command == 'exit' and len(x) == 1:
+            clientSocket.send(user.encode())
             print("bye bye")
             break
 
     clientSocket.close()
+
 
 if __name__ == "__main__":
     main(sys.argv[0:])
