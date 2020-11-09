@@ -2,6 +2,7 @@ import socketserver
 import weakref
 import threading
 import sys
+import socket
 
 BUFFER_SIZE = 1024
 MAX_CONN = 5
@@ -29,6 +30,7 @@ def spellingcheck():
         sys.exit("Value for server port exceeds limit")
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
+
     def handle(self):
         if count_connections(self) >= MAX_CONN:
             self.request.sendall('OFF Limit!'.encode('utf-8'))
@@ -61,38 +63,19 @@ def main():
     server = ThreadedTCPServer(server_address, ThreadedTCPRequestHandler)
 
     server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.daemon = True
-    server_thread.start()
+    server_thread.daemon = False
+
+    try:
+        server_thread.start()
+    except KeyboardInterrupt:
+        sys.exit()
 
     #waiting for connection
     print('server listening at ' + str(port))
-    server.serve_forever()
-    
-            
-
-# def threaded_client(connection):
-#     # ===================== lock ===========================
-#     tweet_message = ""
-#     data = ''
-#     my_lock = threading.Lock()
-#     username = connection.recv(2048)          # username
-#     print(f'username is : {username}')
-#     my_lock.acquire()
-#     if user in users:
-#         connection.send(str.encode("DUsername"))
-#         print(f'Deuplicated username@@')
-#     else: 
-#         users.add(username)
-#         connection.send(str.encode("username legal, connection established."))
-#     my_lock.release()
-#     print(f'usernames: {users}')
-
-
-#     while data != b'e':
-#         data = connection.recv(2048)        # may be 'e'
-#         reply = 'Server Says: ' + data.decode('utf-8')
-#         connection.send(str.encode(reply))
-#     connection.close()
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit("Server Closed by Admin")
+    
