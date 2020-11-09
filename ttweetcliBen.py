@@ -105,7 +105,9 @@ def main(argv):
     if not connection:
         sys.exit(1)
     # ================check duplicate username from server==============
-    clientSocket.send(user.encode())
+    z = (user, 'yea')
+    y = pickle.dump(z)
+    clientSocket.send(y)
     # ==========reply from server whether username is duplicated, 0 for duplicated, 1 otherwise==========
     recvMsg = clientSocket.recv(1024).decode()
     print(recvMsg)
