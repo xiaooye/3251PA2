@@ -1,16 +1,13 @@
 import socketserver
 import threading
 import sys
+import os
 
 BUFFER_SIZE = 1024
-MAX_CONN = 5
-accepted_sockets = set()
+MAX_CONN = 6
 hashtag = {}
 users = {}
 message = {}
-
-def count_connections(self):
-     return sum(1 for sock in accepted_sockets if sock.fileno() >= 0)
 
 def spellingcheck():
     # check number of argument
@@ -30,21 +27,18 @@ def spellingcheck():
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
-        if count_connections(self) >= MAX_CONN:
+        if threading.active_count() > MAX_CONN:
             self.request.sendall('OFF Limit!'.encode('utf-8'))
         else:
-            address,pid = self.client_address
-            accepted_sockets.add(address)
             print('server get connection!')
             while True:
                 data = self.request.recv(BUFFER_SIZE)
                 if len(data)>0:
-                    print('receive=',data.decode('utf-8'))
+                    print('server read: TweetMessage{',data.decode('utf-8'),"}")
                     cur_thread = threading.current_thread()
+                    print(threading.active_count())
                     self.request.sendall('response'.encode('utf-8'))
-                    print('send:','response')
-                else:
-                    break
+                    print('send:','response')                   
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
@@ -59,11 +53,14 @@ def main():
 
     server = ThreadedTCPServer(server_address, ThreadedTCPRequestHandler)
 
-    server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.start()
-
-    #waiting for connection
-    print('server listening at ' + str(port))
+    #waiting for connection   
+    try:
+        print('server listening at ' + str(port))
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("server closed by admin")
+        os._exit(1)
+    
 
 
 if __name__ == '__main__':
