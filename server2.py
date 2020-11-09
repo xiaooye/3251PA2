@@ -1,65 +1,95 @@
-import socket
+import socketserver
+import weakref
 import os
-from _thread import *
 import threading
 import sys
 
-ServerSocket = socket.socket()
-host = '127.0.0.1'
-port = int(sys.argv[1]) 
-ThreadCount = 0
-usernames = set([])  # set
-tweet_message = ""
-try:
-    ServerSocket.bind((host, port))
-except socket.error as e:
-    print(str(e))
+BUF_SIZE = 1024
+MAX_CONN = 5
+accepted_sockets = weakref.WeakSet()
+hashtag = {}
+users = {}
+message = {}
 
-print('Waitiing for a Connection..')
-ServerSocket.listen(5)
+def count_connections(self):
+     return sum(1 for sock in accepted_sockets if sock.fileno() >= 0)
+
+def spellingcheck():
+    # check number of argument
+    if (len(sys.argv) != 2 ):
+        sys.exit("Wrong command")
+
+    #check if port is vaild
+    try:
+        port = int(sys.argv[1])
+    except ValueError:
+        sys.exit("Invaild value for server port")
+
+    # check port range
+    if (port > 65535 or port <= 0):
+        sys.exit("Value for server port exceeds limit")
+
+class Handler(socketserver.BaseRequestHandler):
+    def handle(self):
+        if count_connections(self) >= MAX_CONN:
+            self.request.sendall('OFF Limit!'.encode('utf-8'))
+        else:
+            address,pid = self.client_address
+            accepted_sockets.add(self.client_address)
+            print('%s connected!'%address)
+            while True:
+                data = self.request.recv(BUF_SIZE)
+                if len(data)>0:
+                    print('receive=',data.decode('utf-8'))
+                    cur_thread = threading.current_thread()
+                    self.request.sendall('response'.encode('utf-8'))
+                    print('send:','response')
+                else:
+                    print('close')
+                    break
+
+def main():
+    #check argument
+    spellingcheck()
+
+    #create socket
+    port = int(sys.argv[1])
+    server_address = ('localhost', port)
+
+    try:
+        server = socketserver.ThreadingTCPServer(server_address, Handler)
+    except:
+        sys.exit("error")
+
+    #waiting for connection
+    print('server listening at ' + str(port))
+    server.serve_forever()
+    
+            
+
+# def threaded_client(connection):
+#     # ===================== lock ===========================
+#     tweet_message = ""
+#     data = ''
+#     my_lock = threading.Lock()
+#     username = connection.recv(2048)          # username
+#     print(f'username is : {username}')
+#     my_lock.acquire()
+#     if user in users:
+#         connection.send(str.encode("DUsername"))
+#         print(f'Deuplicated username@@')
+#     else: 
+#         users.add(username)
+#         connection.send(str.encode("username legal, connection established."))
+#     my_lock.release()
+#     print(f'usernames: {users}')
 
 
-def threaded_client(connection):
-    # ===================== lock ===========================
-    tweet_message = ""
-    data = ''
-    my_lock = threading.Lock()
-    username = connection.recv(2048)          # username
-    print(f'username is : {username}')
-    my_lock.acquire()
-    if username in usernames:
-        connection.send(str.encode("DUsername"))
-        print(f'Deuplicated username@@')
-    else: 
-        usernames.add(username)
-        connection.send(str.encode("username legal, connection established."))
-    my_lock.release()
-    print(f'usernames: {usernames}')
+#     while data != b'e':
+#         data = connection.recv(2048)        # may be 'e'
+#         reply = 'Server Says: ' + data.decode('utf-8')
+#         connection.send(str.encode(reply))
+#     connection.close()
 
-
-    while True:
-        data = connection.recv(2048)        # may be 'exit'; can be tweet post
-        data = data.decode('utf-8')
-        # if exist
-        if data == "exit":
-            connection.send(str.encode("bye bye"))
-            break;
-        # if tweet 
-        if data[0:5] == 'tweet':
-            data_arr = data.split('#')
-            message_arr = data_arr[0].split('"')
-            tweet_message = message_arr[1]
-
-        reply = 'tweet_message: ' + tweet_message
-        print(f'reply: {reply}')
-    connection.close()
-
-
-## =================================== mian loop: checking for new clients =======================================
-while True:
-    Client, address = ServerSocket.accept()
-    print('Connected to: ' + address[0] + ':' + str(address[1]))
-    start_new_thread(threaded_client, (Client, ))
-    ThreadCount += 1
-    print('Thread Number: ' + str(ThreadCount))
-ServerSocket.close()
+if __name__ == '__main__':
+    main()
