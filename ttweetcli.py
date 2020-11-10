@@ -146,13 +146,13 @@ def main(argv):
             y = tweet(line, op, clientSocket,address)
             if y:
                 continue
-            clientSocket.recv(1024).decode()
+            print(clientSocket.recv(1024).decode())
             print()
         elif command == 'subscribe' and len(x) == 2:
             y = subscribe(command, x[1], op, clientSocket,address)
             if y:
                 continue
-            clientSocket.recv(1024).decode()
+            print(clientSocket.recv(1024).decode())
             print()
         elif command == 'unsubscribe' and len(x) == 2:
             y = subscribe(command, x[1], op, clientSocket,address)
@@ -186,7 +186,7 @@ def main(argv):
             clientSocket.sendto(exitSend,address)
             print("bye bye")
             break
-      
+   
     clientSocket.close()
 
 
