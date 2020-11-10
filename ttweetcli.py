@@ -60,10 +60,11 @@ def tagChecker(hashtag):
     return tagList
 
 
-def tweet(line, command, user, connection):
+def tweet(line, op, connection):
 
     list = line.split("\"")
     message = list[1]
+    op['msg'] = message
     hashtag = list[2].strip()
     tagList = tagChecker(hashtag)
 
@@ -78,27 +79,27 @@ def tweet(line, command, user, connection):
         print("message length illegal, connection refused.")
         return 1
 
-    tmp = (command, message, tagList, user)
+    tmp = (op, tagList)
     sendTweet = pickle.dump(tmp)
     connection.send(sendTweet)
     return 0
 
 
 # =====================for both subscribe and unsubscribe========================
-def subscribe(command, hashtag, user, connection):
-
+def subscribe(command, hashtag, op, connection):
     tagList = tagChecker(hashtag)
     if not tagList:
         print("hashtag illegal format, connection refused")
         return 1
-    tmp = (command, tagList, user)
-    subscribeSend = pickle.dump(tmp)
+    tmp = (op, tagList)
+    subscribeSend = pickle.dumps(tmp)
     connection.send(subscribeSend)
     return 0
 
 
 def main(argv):
     user = argv[3]
+    op = {'user': None, 'msg': None, 'operation': None}
     clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # ================ check connection error ====================
     connection = conenctionCheck(clientSocket, argv)
@@ -106,7 +107,7 @@ def main(argv):
         sys.exit(1)
     # ================check duplicate username from server==============
     z = (user, 'yea')
-    y = pickle.dump(z)
+    y = pickle.dumps(z)
     clientSocket.send(y)
     # ==========reply from server whether username is duplicated, 0 for duplicated, 1 otherwise==========
     recvMsg = clientSocket.recv(1024).decode()
@@ -135,45 +136,51 @@ def main(argv):
         # hashtag = input[2].strip()
         x = line.split()
         command = x[0]
+        op['operation'] = command
+        op['user'] = user
         if command == 'tweet':
             # ==========tweet return 1 for error 0 otherwise==================
-            y = tweet(line, command, user, clientSocket)
+            y = tweet(line, op, clientSocket)
             if y:
                 continue
             clientSocket.recv(1024).decode()
             print()
         elif command == 'subscribe' and len(x) == 2:
-            y = subscribe(command, x[1], user, clientSocket)
+            y = subscribe(command, x[1], op, clientSocket)
             if y:
                 continue
             clientSocket.recv(1024).decode()
             print()
         elif command == 'unsubscribe' and len(x) == 2:
-            y = subscribe(command, x[1], user, clientSocket)
+            y = subscribe(command, x[1], op, clientSocket)
             if y:
                 continue
             clientSocket.recv(1024).decode()
             print()
         elif command == 'timeline' and len(x) == 1:
-            tmp = (command, user)
-            timelineSend = pickle.dump(tmp)
+            tmp = (op, None)
+            timelineSend = pickle.dumps(tmp)
             clientSocket.send(timelineSend)
             clientSocket.recv(1024).decode()
             print()
         elif command == 'getuser' and len(x) == 1:
             # tmp = (command, user)
             # getuserSend = pickle.dump(tmp)
-            clientSocket.send(command.encode())
+            tmp = (op, None)
+            getuserSend = pickle.dumps(tmp)
+            clientSocket.send(getuserSend)
             clientSocket.recv(1024).decode()
             print()
         elif command == 'gettweets' and len(x) == 2:
-            tmp = (command, user)
-            gettweetSend = pickle.dump(tmp)
+            tmp = (op, None)
+            gettweetSend = pickle.dumps(tmp)
             clientSocket.send(gettweetSend)
             clientSocket.recv(1024).decode()
             print()
         elif command == 'exit' and len(x) == 1:
-            clientSocket.send(user.encode())
+            tmp = (op, None)
+            exitSend = pickle.dumps(tmp)
+            clientSocket.send(exitSend)
             print("bye bye")
             break
 
