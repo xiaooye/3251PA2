@@ -80,7 +80,7 @@ def tweet(line, op, connection):
         return 1
 
     tmp = (op, tagList)
-    sendTweet = pickle.dump(tmp)
+    sendTweet = pickle.dumps(tmp)
     connection.send(sendTweet)
     return 0
 
@@ -112,11 +112,10 @@ def main(argv):
     # ==========reply from server whether username is duplicated, 0 for duplicated, 1 otherwise==========
     recvMsg = clientSocket.recv(1024).decode()
     print(recvMsg)
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # if not int(recvMsg):
-    #     print("error: username has wrong format, connection refused.")
-    #     clientSocket.close()
-    #     sys.exit(1)
+    if not int(recvMsg):
+        print("error: username has wrong format, connection refused.")
+        clientSocket.close()
+        sys.exit(1)
 
     print("type whatever you want")
     # inputList = []
