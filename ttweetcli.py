@@ -65,7 +65,7 @@ def tweet(line, op, connection):
     list = line.split("\"")
     message = list[1]
     op['msg'] = message
-    hashtag = list[2].strip()
+    hashtag = filter(None,list[2].strip().split("#"))
     tagList = tagChecker(hashtag)
 
     if not tagList:
@@ -80,7 +80,7 @@ def tweet(line, op, connection):
         return 1
 
     tmp = (op, tagList)
-    sendTweet = pickle.dump(tmp)
+    sendTweet = pickle.dumps(tmp)
     connection.send(sendTweet)
     return 0
 
@@ -166,7 +166,7 @@ def main(argv):
             print()
         elif command == 'getuser' and len(x) == 1:
             # tmp = (command, user)
-            # getuserSend = pickle.dump(tmp)
+            # getuserSend = pickle.dumps(tmp)
             tmp = (op, None)
             getuserSend = pickle.dumps(tmp)
             clientSocket.send(getuserSend)

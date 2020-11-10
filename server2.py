@@ -26,6 +26,10 @@ def spellingcheck():
     if (port > 65535 or port <= 0):
         sys.exit("Value for server port exceeds limit")
 
+def exit(user):
+    users.pop(user)
+    for x in hashtags:
+        hashtags[x].remove(user)
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
@@ -35,17 +39,21 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         else:
             #new thread for incoming socket
             cur_thread = threading.current_thread()
+            user = ""
             print('server get connection!')
             while True:
                 #receive data
-                data = self.request.recv(BUFFER_SIZE)
+                try:
+                    data = self.request.recv(BUFFER_SIZE)
+                except ConnectionResetError:
+                    exit(user)
+                    break
                 #if has data
                 if len(data) > 0:
                     #unpack data
                     data = pickle.loads(data)
                     #if only one variable then create new user
-                    if (len(data) == 2):
-                        print('server get connection!')
+                    if (data[1] == 'yea'):
                         user = data[0].strip()
                         print(
                             "server read: TweetMessage{username='" + user + "', message='null', hashTags='null', operation='init'}")
@@ -55,17 +63,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                             self.request.sendall('duplicate'.encode('utf-8'))
                         else:
                             users[user] = set()
-                            self.request.sendall('true'.encode('utf-8'))
+                            self.request.sendall('username legal, tweeconnection established'.encode('utf-8'))
 
                         #tmp
-                        print(users)
-
-                    elif (len(data) == 3):
-                        print(data)
-                        self.request.sendall('response'.encode('utf-8'))
+                        #print(users)
+                        
                     else:
                         print(data)
+                        self.request.sendall('response'.encode('utf-8'))
                 else:
+                    exit(user)
                     break
 
 
