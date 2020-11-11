@@ -52,7 +52,7 @@ class receive(object):
         """ Method that runs forever """
         while True:
             # Do something
-            data = clientSocket.recv(1024).decode()
+            data = clientSocket.recv(1024)
             print(data)
             #data_queue.put(data)
 
@@ -135,6 +135,7 @@ def tweet(line, op, connection,address):
         return 1
 
     tmp = (op, tagList)
+    print(tmp)
     sendTweet = pickle.dumps(tmp)
     connection.sendto(sendTweet,address)
     return 0
@@ -191,46 +192,34 @@ def main(argv):
             if command == 'tweet':
                 # ==========tweet return 1 for error 0 otherwise==================
                 y = tweet(line, op, clientSocket, address)
-                if y:
-                    continue
-                print(clientSocket.recv(1024).decode())
-                print()
+
             elif command == 'subscribe' and len(x) == 2:
                 y = subscribe(command, x[1], op, clientSocket, address)
-                if y:
-                    continue
-                print(clientSocket.recv(1024).decode())
-                print()
+
             elif command == 'unsubscribe' and len(x) == 2:
                 y = subscribe(command, x[1], op, clientSocket, address)
-                if y:
-                    continue
-                clientSocket.recv(1024).decode()
-                print()
+
             elif command == 'timeline' and len(x) == 1:
                 tmp = (op, None)
                 timelineSend = pickle.dumps(tmp)
                 clientSocket.sendto(timelineSend, address)
-                print(clientSocket.recv(1024).decode())
-                print()
+
             elif command == 'getuser' and len(x) == 1:
                 # tmp = (command, user)
                 # getuserSend = pickle.dumps(tmp)
                 tmp = (op, None)
                 getuserSend = pickle.dumps(tmp)
                 clientSocket.sendto(getuserSend, address)
-                print(clientSocket.recv(1024).decode())
-                print()
+
             elif command == 'gettweets' and len(x) == 2:
                 tmp = (op, None)
                 gettweetSend = pickle.dumps(tmp)
                 clientSocket.sendto(gettweetSend, address)
-                print(clientSocket.recv(1024).decode())
-                print()
+
             elif command == 'exit' and len(x) == 1:
                 tmp = (op, None)
                 exitSend = pickle.dumps(tmp)
-                print(clientSocket.sendto(exitSend, address))
+                clientSocket.sendto(exitSend, address)
                 print("bye bye")
                 break
             # data = data_queue.get_nowait()
