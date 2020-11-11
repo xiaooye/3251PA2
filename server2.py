@@ -34,13 +34,15 @@ def exit(user):
     for x in hashtags:
         if user in hashtags[x]:
             hashtags[x].remove(user)
+    threads.pop(user)
+    timeline.pop(user)
     subcount.pop(user)
 
 def read(user,message,hashtag,operation):
     return "server read: TweetMessage{username='" + user + "', message='" + message + "', hashTags='" + hashtag + "', operation='" + operation + "'}"
 
 def write(success,type,error,tweetMsg,hashTags,sender,notification,usernames,historyMessages):
-    return "server write: TweetResponse{success='" + success + "', type='"+ type +"', error='" + error +"', tweetMsg='"+tweetMsg+"', hashTags='" + hashTags + "', sender='"+sender+"', notification='"+notification+"', usernames="+ usernames+", historyMessages="+historyMessages+"}"
+    return "server write: TweetResponse{success='" + success + "', type='"+ type +"', error='" + error +"', tweetMsg='"+tweetMsg+"', hashTags='" + hashTags + "', sender='"+sender+"', notification='"+notification+"', usernames="+ str(usernames) +", historyMessages="+ str(historyMessages) +"}"
 
 class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -83,7 +85,10 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     
                     #add tweet to collections                           
                     index = len(tweets)
-                    tweets[index] = message
+                    has = ""
+                    for ha in hashtag:
+                        has += ha
+                    tweets[index] = (user + ':"' + message + '" ' + has)
 
                     #add to sent history
                     users[user].add(index)
@@ -109,6 +114,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         socket.sendto(message.encode(),threads[user])
                     
                     socket.sendto('success'.encode(),self.client_address)
+                    print(write("true", "tweet", "null", message , has , user , "null", 0, 0))
 
                 #operation
                 elif operation == 'subscribe':
@@ -128,7 +134,9 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                                 hashtags[hash] = set([user])
                             else:
                                 hashtags[hash].add(user)
-                        socket.sendto('success'.encode(),self.client_address)   
+
+                        socket.sendto('success'.encode(),self.client_address)
+                        print(write("true", "subscribe", "null", "null", "null", "null", "null", 0, 0))
 
                 elif operation == "unsubscribe":
                     #server message
@@ -139,41 +147,48 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         try:
                             hashtags[hash].remove(user)
                         except KeyError:
-                            finish = False
-                            socket.sendto('hashtag not found'.encode(),self.client_address)
+                            pass
+
                     if finish:
+                        print(write("true", "unsubscribe", "null", "null", "null", "null", "null", 0, 0))
                         socket.sendto('success'.encode(),self.client_address)
                 
                 elif operation == "timeline":
                     #server message
                     print(read(user,"null","null","timeline"))
+                    timeline = []
                     for tweet in timeline[user]:
-                        socket.sendto(tweets[tweet].encode(), self.client_address)
-                    socket.sendto('success'.encode(),self.client_address)
+                        timeline.append(tweets[tweets])
+                    timeline = pickle.dumps(timeline)
+                    socket.sendto(timeline,self.client_address)
 
                 elif operation == "getuser":
                     #server message
                     print(read(user,"null","null","getusers"))
+                    us = []
                     for user in users:
-                        socket.sendto(user.encode(), self.client_address)
-                    socket.sendto('success'.encode(),self.client_address)
+                        us.append(user)
+                    us = pickle.dumps(us)
+                    socket.sendto(us,self.client_address)
 
                 elif operation == "gettweets":
                     #server message
                     print(read(user,"null","null","gettweets"))
+                    gett = []
                     for tweet in users[user]:
-                        socket.sendto(tweets[tweet].encode(), self.client_address)
-                    socket.sendto('success'.encode(),self.client_address)
+                        gett.append(tweets[tweet])
+                    gett = pickle.dumps(gett)
+                    socket.sendto(gett,self.client_address)
+                    print(write("true", "gettweets", "null", "null", "null", "null", "null", 0, len(gett)))
 
                 elif operation == "exit":
                     #server message
                     print(read(user,"null","null","exit"))
-
                     exit(user)    
                     socket.sendto('success'.encode(),self.client_address)                    
 
                 else:
-                    print("some")
+                    print("wrong command")
                     socket.sendto('error'.encode(),self.client_address)
 
 class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):

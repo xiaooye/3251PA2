@@ -1,6 +1,9 @@
 import socketserver
 import sys
 import os
+import pickle
+
+tmp = {}
 
 def spellingcheck():
     # check number of argument
@@ -21,12 +24,15 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data = self.request[0]
         socket = self.request[1]
+        data, y = pickle.loads(data)
         print(data)
+        tmp[data] = self.client_address
         count = 0
         while count < 3:
             message = "data yeah" + str(count)
             print(message)
-            socket.sendto(message.encode(), self.client_address)
+            for d in tmp:
+                socket.sendto(message.encode(), tmp[d])
             count += 1
 
 class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):

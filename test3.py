@@ -9,11 +9,12 @@ ip='127.0.0.1'
 port = 8080
 add = (ip,port)
 
-z = ('ajdiwjidj', 'yea')
+z = ('aa', 'yea')
 y = pickle.dumps(z)
 
 clientSocket.sendto(y,add)
 
+data_queue = queue.Queue()
 input_queue = queue.Queue()
 
 class ThreadingExample(object):
