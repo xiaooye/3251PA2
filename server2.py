@@ -108,7 +108,6 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
 
                     #send to each user
                     for user in receiver:
-                        print("sending to ",user)
                         timeline[user].append(index)
                         msg = pickle.dumps((message, receiver[user]))
                         socket.sendto(message.encode(),threads[user])
@@ -135,7 +134,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                             else:
                                 hashtags[hash].add(user)
 
-                        socket.sendto('success'.encode(),self.client_address)
+                        socket.sendto('operation success'.encode(),self.client_address)
                         print(write("true", "subscribe", "null", "null", "null", "null", "null", 0, 0))
 
                 elif operation == "unsubscribe":

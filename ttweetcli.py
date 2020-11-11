@@ -52,7 +52,7 @@ class receive(object):
         """ Method that runs forever """
         while True:
             # Do something
-            data = clientSocket.recv(1024)
+            data = clientSocket.recv(1024).decode()
             print(data)
             #data_queue.put(data)
 
@@ -135,7 +135,6 @@ def tweet(line, op, connection,address):
         return 1
 
     tmp = (op, tagList)
-    print(tmp)
     sendTweet = pickle.dumps(tmp)
     connection.sendto(sendTweet,address)
     return 0
