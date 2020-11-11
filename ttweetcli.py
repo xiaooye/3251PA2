@@ -52,7 +52,7 @@ class receive(object):
         """ Method that runs forever """
         while True:
             # Do something
-            data = clientSocket.recv(1024)
+            data = clientSocket.recv(1024).decode()
             print(data)
             #data_queue.put(data)
 
@@ -156,7 +156,6 @@ def subscribe(command, hashtag, op, connection,address):
 def main(argv):
     user = argv[3]
     op = {'user': None, 'msg': None, 'operation': None}
-    clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # ================ check connection error ====================
     connection = conenctionCheck(clientSocket, argv)
     ip = argv[1]
@@ -169,12 +168,10 @@ def main(argv):
     y = pickle.dumps(z)
     clientSocket.sendto(y,address)
     # ==========reply from server whether username is duplicated, 0 for duplicated, 1 otherwise==========
-    recvMsg = clientSocket.recv(1024).decode()
-    print(recvMsg)
-    if recvMsg == "d":
-        print("error: username has wrong format, connection refused.")
-        clientSocket.close()
-        sys.exit(1)
+    # if recvMsg == "d":
+    #     print("error: username has wrong format, connection refused.")
+    #     clientSocket.close()
+    #     sys.exit(1)
 
     receiveMsg = receive()
     input = userInput()
