@@ -183,10 +183,10 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
 
                 elif operation == "gettweets":
                     #server message
-                    print(read(user,"null","null","gettweets"))
-                    for tweet in users[user]:
+                    print(read(message,"null","null","gettweets"))
+                    for tweet in users[message]:
                         sender(self,"gettweets",tweets[tweet],socket)  
-                    print(write("true", "gettweets", "null", "null", "null", "null", "null", 0, len(users[user])))
+                    print(write("true", "gettweets", "null", "null", "null", "null", "null", 0, len(users[message])))
                     sender(self,"finish","",socket)
 
                 elif operation == "exit":
