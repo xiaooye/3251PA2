@@ -187,8 +187,9 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                 elif operation == "exit":
                     #server message
                     print(read(user,"null","null","exit"))
-                    exit(user)    
-                    socket.sendto('success'.encode(),self.client_address)                    
+                    exit(user)
+                    resp = pickle.dumps(("exit", "bye bye"))
+                    socket.sendto(resp,self.client_address)                    
 
                 else:
                     print("wrong command")

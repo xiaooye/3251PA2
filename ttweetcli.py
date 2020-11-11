@@ -23,7 +23,7 @@ class userInput(object):
         """
 
         thread = threading.Thread(target=self.run, args=())
-        thread.daemon = True                            # Daemonize thread
+        thread.daemon = None                           # Daemonize thread
         thread.start()                                  # Start the execution
 
     def run(self):
@@ -31,6 +31,8 @@ class userInput(object):
         while True:
             # Do something
             x = input()
+            if x == "exit":
+                os._exit(1)
             input_queue.put(x)
 
 class receive(object):
@@ -46,7 +48,7 @@ class receive(object):
         """
 
         thread = threading.Thread(target=self.run, args=())
-        thread.daemon = True                            # Daemonize thread
+        thread.daemon = None                            # Daemonize thread
         thread.start()                                  # Start the execution
 
     def run(self):
@@ -64,6 +66,8 @@ class receive(object):
                 print(d)
             elif t == "subscribe":
                 print(d)
+            elif t == "exit":
+                os._exit(1)
             else:
                 print(d)
 
@@ -228,7 +232,7 @@ def main(argv):
                 exitSend = pickle.dumps(tmp)
                 clientSocket.sendto(exitSend, address)
                 print("bye bye")
-                break
+                os._exit(1)
             # data = data_queue.get_nowait()
             # print(data)
         except queue.Empty:
