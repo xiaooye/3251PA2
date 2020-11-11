@@ -65,13 +65,15 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
 
                 #check if user exists
                 if user in users:
-                    socket.sendto('d'.encode(),self.client_address)
+                    resp = pickle.dumps(('duplicate',None))
+                    socket.sendto(resp,self.client_address)
                 else:
                     users[user] = set()
                     subcount[user] = 0
                     threads[user] = self.client_address
                     timeline[user] = []
-                    socket.sendto('username legal, connection established'.encode(), self.client_address)
+                    resp = pickle.dumps(("init", 'username legal, connection established'))
+                    socket.sendto(resp, self.client_address)
                 
             else:
                 d = data[0]
@@ -88,7 +90,8 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     has = ""
                     for ha in hashtag:
                         has += ha
-                    tweets[index] = (user + ':"' + message + '" ' + has)
+                    send_msg = (user + ':"' + message + '" ' + has)
+                    tweets[index] = send_msg
 
                     #add to sent history
                     users[user].add(index)
@@ -109,10 +112,10 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     #send to each user
                     for user in receiver:
                         timeline[user].append(index)
-                        msg = pickle.dumps((message, receiver[user]))
-                        socket.sendto(message.encode(),threads[user])
+                        user_msg = (user + ': "' + message + '" #' + receiver[user])
+                        msg = pickle.dumps(("receive", user_msg))
+                        socket.sendto(msg,threads[user])
                     
-                    socket.sendto('success'.encode(),self.client_address)
                     print(write("true", "tweet", "null", message , has , user , "null", 0, 0))
 
                 #operation
@@ -124,7 +127,8 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     for hash in hashtag:
                         #check if reach limit
                         if subcount[user] >= 3:
-                            socket.sendto('subscribe out of limit'.encode(),self.client_address)
+                            resp = pickle.dumps(("error", 'subscribe out of limit'))
+                            socket.sendto(resp,self.client_address)
                             break
                         else:
                             subcount[user] += 1
@@ -133,8 +137,8 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                                 hashtags[hash] = set([user])
                             else:
                                 hashtags[hash].add(user)
-
-                        socket.sendto('operation success'.encode(),self.client_address)
+                        resp = pickle.dumps(("subscribe", "operation success"))
+                        socket.sendto(resp,self.client_address)
                         print(write("true", "subscribe", "null", "null", "null", "null", "null", 0, 0))
 
                 elif operation == "unsubscribe":

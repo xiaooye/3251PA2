@@ -1,4 +1,5 @@
 import sys
+import os
 import pickle
 import socket
 import threading
@@ -52,11 +53,19 @@ class receive(object):
         """ Method that runs forever """
         while True:
             # Do something
-            data = clientSocket.recv(1024).decode()
-            print(data)
-            #data_queue.put(data)
-
-
+            data = clientSocket.recv(1024)
+            t, d = pickle.loads(data)
+            if t == "duplicate":
+                print("error: username has wrong format, connection refused.")
+                os._exit(1)
+            elif t == "init":
+                print(d)
+            elif t == "receive":
+                print(d)
+            elif t == "subscribe":
+                print(d)
+            else:
+                print(d)
 
 # ==============ip address check for validation===========================
 def valid_ip(host):
@@ -74,7 +83,6 @@ def conenctionCheck(connection, argv):
     # username_valid = True
     # parameter_valid = True
     # error = False
-    print(argv)
     ##======================= number of parameter ==============
     if len(argv) != 4:
         sys.exit("Wrong number of parameters: “error: args should contain <ServerIP> <ServerPort> <Username>")
@@ -176,7 +184,7 @@ def main(argv):
     receiveMsg = receive()
     input = userInput()
 
-    print("type whatever you want")
+    #print("type whatever you want")
     # inputList = []
 
     while True:
