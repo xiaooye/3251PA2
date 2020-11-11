@@ -71,11 +71,11 @@ class receive(object):
             try:
                 data = clientSocket.recv(4096)
             except ConnectionResetError:
-                print("error")
+                print("error: server port invalid, connection refused.")
                 os._exit(1)
             t, d = pickle.loads(data)
             if t == "duplicate":
-                print("error: username has wrong format, connection refused.")
+                print("username illegal, connection refused.")
                 os._exit(1)
             elif t == "uerror":
                 print(d)
@@ -95,6 +95,7 @@ class receive(object):
             elif t == "timeline":
                 print(d)
             elif t == "exit":
+                print("bye bye")
                 os._exit(1)
             elif t == "error":
                 print(d)
@@ -119,7 +120,7 @@ def conenctionCheck(connection, argv):
     # error = False
     ##======================= number of parameter ==============
     if len(argv) != 4:
-        print("Wrong number of parameters: “error: args should contain <ServerIP> <ServerPort> <Username>")
+        print("error: args should contain <ServerIP> <ServerPort> <Username>")
         os._exit(1)
     ## ================================= ip error ===============
     if valid_ip(argv[1]) == False:
