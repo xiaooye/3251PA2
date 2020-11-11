@@ -105,21 +105,19 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     print(read(user,message,str(hashtag),"tweet"))
 
                     #construct receiver list
-                    receiver = {}
+                    receiver = set()
                         
                     #iterate through hashtag list
                     for hash in hashtag:
                         if hash in hashtags:
-                            for user in hashtags[hash]:
-                                if user not in receiver:
-                                    receiver[user] = hash
+                            for auser in hashtags[hash]:
+                                receiver.add(auser)
 
                     #send to each user
-                    for user in receiver:
-                        timeline[user].append(index)
-                        user_msg = (user + ': "' + message + '" #' + receiver[user])
-                        msg = pickle.dumps(("receive", user_msg))
-                        socket.sendto(msg,threads[user])
+                    for getuser in receiver:
+                        timeline[getuser].append(index)
+                        msg = pickle.dumps(("receive", send_msg))
+                        socket.sendto(msg,threads[getuser])
                     
                     sender(self,"tweet","",socket)
                     print(write("true", "tweet", "null", message , has , user , "null", 0, 0))

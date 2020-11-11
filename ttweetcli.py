@@ -32,12 +32,12 @@ class userInput(object):
             # Do something
             try:
                 x = input()
-                if x == "exit":
-                    op = {'user': user, 'msg': None, 'operation': "exit"}
-                    exitSend = pickle.dumps((op, None))
-                    clientSocket.sendto(exitSend, address)
-                    print("bye bye")
-                    os._exit(1)
+                # if x == "exit":
+                #     op = {'user': user, 'msg': None, 'operation': "exit"}
+                #     exitSend = pickle.dumps((op, None))
+                #     clientSocket.sendto(exitSend, address)
+                #     print("bye bye")
+                #     os._exit(1)
                 input_queue.put(x)
             except KeyboardInterrupt:
                 op = {'user': user, 'msg': None, 'operation': "exit"}
@@ -261,12 +261,12 @@ def main(argv):
                 gettweetSend = pickle.dumps(tmp)
                 clientSocket.sendto(gettweetSend, address)
 
-            # elif command == 'exit' and len(x) == 1:
-            #     tmp = (op, None)
-            #     exitSend = pickle.dumps(tmp)
-            #     clientSocket.sendto(exitSend, address)
-            #     print("bye bye")
-            #     os._exit(1)
+            elif command == 'exit' and len(x) == 1:
+                tmp = (op, None)
+                exitSend = pickle.dumps(tmp)
+                clientSocket.sendto(exitSend, address)
+                print("\nbye bye")
+                os._exit(1)
             # data = data_queue.get_nowait()
             # print(data)
             else:
