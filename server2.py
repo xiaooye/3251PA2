@@ -89,7 +89,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     index = len(tweets)
                     has = ""
                     for ha in hashtag:
-                        has += ha
+                        has += ("#" + ha)
                     send_msg = (user + ': "' + message + '" ' + has)
                     tweets[index] = send_msg
 
@@ -164,7 +164,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     timelines = []
                     for tweet in timeline[user]:
                         timelines.append(tweets[tweet])
-                    tl = pickle.dumps(("timeline", timeline))
+                    tl = pickle.dumps(("timeline", timelines))
                     socket.sendto(tl,self.client_address)
 
                 elif operation == "getusers":
