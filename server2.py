@@ -129,7 +129,9 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     for hash in hashtag:
                         #check if reach limit
                         if subcount[user] >= 3:
-                            resp = pickle.dumps(("error", 'subscribe out of limit'))
+                            mess = 'operation failed: sub #' + hash + ' failed, already exists or exceeds 3 limitation'
+                            resp = pickle.dumps(("error", mess))
+                            print(write("false", "subscribe", "null", "null", "null", "null", "null", 0, 0))
                             socket.sendto(resp,self.client_address)
                             break
                         else:
@@ -138,7 +140,14 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                             if hash not in hashtags:
                                 hashtags[hash] = set([user])
                             else:
-                                hashtags[hash].add(user)
+                                if user not in hashtags[hash]:
+                                    hashtags[hash].add(user)
+                                else:
+                                    mess = 'operation failed: sub #' + hash + ' failed, already exists or exceeds 3 limitation'
+                                    resp = pickle.dumps(("error", mess))
+                                    print(write("false", "subscribe", "null", "null", "null", "null", "null", 0, 0))
+                                    socket.sendto(resp,self.client_address)
+                                    break
                         resp = pickle.dumps(("subscribe", "operation success"))
                         socket.sendto(resp,self.client_address)
                         print(write("true", "subscribe", "null", "null", "null", "null", "null", 0, 0))
@@ -155,8 +164,9 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                             pass
 
                     if finish:
-                        print(write("true", "unsubscribe", "null", "null", "null", "null", "null", 0, 0))
-                        socket.sendto('success'.encode(),self.client_address)
+                        resp = pickle.dumps(("unsubscribe"))
+                        socket.sendto(,self.client_address)
+                        print(write("true", "unsubscribe", "null", "null", "null", "null", "null", 0, 0))                      
                 
                 elif operation == "timeline":
                     #server message

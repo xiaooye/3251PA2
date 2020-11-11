@@ -84,6 +84,8 @@ class receive(object):
                 print()
             elif t == "exit":
                 os._exit(1)
+            elif t == "error":
+                print(d)
             else:
                 pass
 
