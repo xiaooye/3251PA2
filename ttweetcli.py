@@ -62,14 +62,14 @@ class receive(object):
             data = clientSocket.recv(1024)
             t, d = pickle.loads(data)
             if t == "duplicate":
-                print("error: username has wrong format, connection refused.\n")
+                print("error: username has wrong format, connection refused.")
                 os._exit(1)
             elif t == "init":
-                print(d+"\n")
+                print(d)
             elif t == "receive":
-                print(d+"\n")
+                print(d)
             elif t == "subscribe":
-                print(d+"\n")
+                print(d)
             elif t == "gettweets":
                 for tweet in d:
                     print(tweet)
@@ -186,10 +186,10 @@ def subscribe(command, hashtag, op, connection):
 def main(argv):
     global address
     global user
+    connection = conenctionCheck(clientSocket, argv)
     user = argv[3]
     op = {'user': None, 'msg': None, 'operation': None}
     # ================ check connection error ====================
-    connection = conenctionCheck(clientSocket, argv)
     ip = argv[1]
     port = int(argv[2])
     address = (ip,port)

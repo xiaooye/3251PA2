@@ -40,10 +40,10 @@ class judge:
         self.clients = {}
 
     def get_client_output(self, username):
-        return self.file
-        # username = str(username)
-        # self.clients[username] = open(username+'.client.txt', 'xt')
-        # return self.clients[username]
+        # return self.file
+        username = str(username)
+        self.clients[username] = open(username+'.client.txt', 'xt')
+        return self.clients[username]
 
     def get_msg(self):
         messages = [ ' ', 'cs3251', 'fsadfsdfd','empty message', 'message', 'Empty Message','d','u','download']
@@ -280,11 +280,11 @@ class judge:
 
 
     def input_stdin(self, p, cmd, username):
-        # if(username in self.clients):
-        #     self.clients[username].write('\nuser %s stdin command: ' % username + cmd + '\n')
-        #     self.clients[username].flush()
-        #     if(cmd=='exit'):
-        #         self.clients[username].close()
+        if(username in self.clients):
+            self.clients[username].write('\nuser %s stdin command: ' % username + cmd + '\n')
+            self.clients[username].flush()
+            if(cmd=='exit'):
+                self.clients[username].close()
 
         self.file.write('\nuser %s stdin command: ' % username + cmd + '\n')
         self.file.flush()
@@ -342,7 +342,7 @@ class judge:
         return p
 
 
-    def runTest(self, type='p3', port=13000, srv = True):
+    def runTest(self, type='p3', port=13000, srv = False):
         client_names={'j':'ttweetcli','p':'ttweetcli.py','c':'ttweetcli', 'jar': 'ttweetcli.jar'}
         srv_names = {'j': 'ttweetser', 'p': 'ttweetser.py', 'c': 'ttweetser', 'jar': 'ttweetser.jar'}
         for f in os.listdir("."):
