@@ -65,7 +65,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
 
                 #check if user exists
                 if user in users:
-                    resp = pickle.dumps(('duplicate',None))
+                    resp = pickle.dumps(('duplicate',""))
                     socket.sendto(resp,self.client_address)
                 else:
                     users[user] = set()
@@ -90,7 +90,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     has = ""
                     for ha in hashtag:
                         has += ha
-                    send_msg = (user + ':"' + message + '" ' + has)
+                    send_msg = (user + ': "' + message + '" ' + has)
                     tweets[index] = send_msg
 
                     #add to sent history
@@ -116,8 +116,8 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         msg = pickle.dumps(("receive", user_msg))
                         socket.sendto(msg,threads[user])
                     
-                    # resp = pickle.dumps(("tweet", ""))
-                    # socket.sendto(resp,self.client_address)
+                    resp = pickle.dumps(("tweet", ""))
+                    socket.sendto(resp,self.client_address)
                     print(write("true", "tweet", "null", message , has , user , "null", 0, 0))
 
                 #operation
@@ -163,17 +163,17 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     print(read(user,"null","null","timeline"))
                     timelines = []
                     for tweet in timeline[user]:
-                        timelines.append(tweets[tweets])
-                    tl = pickle.dumps(timeline)
+                        timelines.append(tweets[tweet])
+                    tl = pickle.dumps(("timeline", timeline))
                     socket.sendto(tl,self.client_address)
 
-                elif operation == "getuser":
+                elif operation == "getusers":
                     #server message
                     print(read(user,"null","null","getusers"))
                     us = []
                     for user in users:
                         us.append(user)
-                    us = pickle.dumps(us)
+                    us = pickle.dumps(("getusers",us))
                     socket.sendto(us,self.client_address)
 
                 elif operation == "gettweets":

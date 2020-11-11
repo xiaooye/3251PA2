@@ -62,23 +62,31 @@ class receive(object):
             data = clientSocket.recv(1024)
             t, d = pickle.loads(data)
             if t == "duplicate":
-                print("error: username has wrong format, connection refused.")
+                print("error: username has wrong format, connection refused.\n")
                 os._exit(1)
             elif t == "init":
-                print(d)
+                print(d+"\n")
             elif t == "receive":
-                print(d)
+                print(d+"\n")
             elif t == "subscribe":
-                print(d)
+                print(d+"\n")
             elif t == "gettweets":
                 for tweet in d:
                     print(tweet)
+                print()
+            elif t == "getusers":
+                for user in d:
+                    print(user)
+                print()
+            elif t == "timeline":
+                for tweet in d:
+                    print(tweet)
+                print()
             elif t == "exit":
                 os._exit(1)
             else:
-                print(d)
-                
-            print()
+                pass
+
 # ==============ip address check for validation===========================
 def valid_ip(host):
     ip_arr = host.split('.')
@@ -225,7 +233,7 @@ def main(argv):
                 timelineSend = pickle.dumps(tmp)
                 clientSocket.sendto(timelineSend, address)
 
-            elif command == 'getuser' and len(x) == 1:
+            elif command == 'getusers' and len(x) == 1:
                 # tmp = (command, user)
                 # getuserSend = pickle.dumps(tmp)
                 tmp = (op, None)
@@ -245,6 +253,9 @@ def main(argv):
                 os._exit(1)
             # data = data_queue.get_nowait()
             # print(data)
+            else:
+                print("invaild argument\n")
+
         except queue.Empty:
             pass
    
