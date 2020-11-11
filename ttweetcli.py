@@ -178,7 +178,7 @@ def tweet(line, op, connection):
     tagList = tagChecker(hashtag)
 
     if not tagList:
-        print("hashtag illegal format, connection refused")
+        print("hashtag illegal format, connection refused.")
         return 1
 
     if len(message) <= 0:
