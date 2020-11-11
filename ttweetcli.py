@@ -164,7 +164,7 @@ def main(argv):
             tmp = (op, None)
             timelineSend = pickle.dumps(tmp)
             clientSocket.sendto(timelineSend,address)
-            clientSocket.recv(1024).decode()
+            print(clientSocket.recv(1024).decode())
             print()
         elif command == 'getuser' and len(x) == 1:
             # tmp = (command, user)
@@ -172,18 +172,18 @@ def main(argv):
             tmp = (op, None)
             getuserSend = pickle.dumps(tmp)
             clientSocket.sendto(getuserSend,address)
-            clientSocket.recv(1024).decode()
+            print(clientSocket.recv(1024).decode())
             print()
         elif command == 'gettweets' and len(x) == 2:
             tmp = (op, None)
             gettweetSend = pickle.dumps(tmp)
             clientSocket.sendto(gettweetSend,address)
-            clientSocket.recv(1024).decode()
+            print(clientSocket.recv(1024).decode())
             print()
         elif command == 'exit' and len(x) == 1:
             tmp = (op, None)
             exitSend = pickle.dumps(tmp)
-            clientSocket.sendto(exitSend,address)
+            print(clientSocket.sendto(exitSend,address))
             print("bye bye")
             break
    

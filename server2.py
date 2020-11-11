@@ -1,4 +1,3 @@
-from socket import error
 import socketserver
 import threading, queue
 import sys
@@ -39,6 +38,9 @@ def exit(user):
 
 def read(user,message,hashtag,operation):
     return "server read: TweetMessage{username='" + user + "', message='" + message + "', hashTags='" + hashtag + "', operation='" + operation + "'}"
+
+def write(success,type,error,tweetMsg,hashTags,sender,notification,usernames,historyMessages):
+    return "server write: TweetResponse{success='" + success + "', type='"+ type +"', error='" + error +"', tweetMsg='"+tweetMsg+"', hashTags='" + hashTags + "', sender='"+sender+"', notification='"+notification+"', usernames="+ usernames+", historyMessages="+historyMessages+"}"
 
 class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -146,21 +148,21 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     #server message
                     print(read(user,"null","null","timeline"))
                     for tweet in timeline[user]:
-                        socket.sendto(tweets[tweet], self.client_address)
+                        socket.sendto(tweets[tweet].encode(), self.client_address)
                     socket.sendto('success'.encode(),self.client_address)
 
-                elif operation == "getusers":
+                elif operation == "getuser":
                     #server message
                     print(read(user,"null","null","getusers"))
                     for user in users:
-                        socket.sendto(user, self.client_address)
+                        socket.sendto(user.encode(), self.client_address)
                     socket.sendto('success'.encode(),self.client_address)
 
                 elif operation == "gettweets":
                     #server message
                     print(read(user,"null","null","gettweets"))
                     for tweet in users[user]:
-                        socket.sendto(tweets[tweet], self.client_address)
+                        socket.sendto(tweets[tweet].encode(), self.client_address)
                     socket.sendto('success'.encode(),self.client_address)
 
                 elif operation == "exit":
