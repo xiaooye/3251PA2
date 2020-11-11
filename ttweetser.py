@@ -113,6 +113,9 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                             for auser in hashtags[hash]:
                                 receiver.add(auser)
 
+                    for user in hashtags['ALL']:
+                        receiver.add(user)
+
                     #send to each user
                     for getuser in receiver:
                         timeline[getuser].append(index)
