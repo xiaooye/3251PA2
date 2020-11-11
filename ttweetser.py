@@ -169,12 +169,14 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     print(read(user,"null","null","timeline"))
                     for tweet in timeline[user]:
                         sender(self,"timeline",tweets[tweet],socket)
+                    sender(self,"finish","",socket)
 
                 elif operation == "getusers":
                     #server message
                     print(read(user,"null","null","getusers"))
                     for user in users:
                         sender(self,"getusers",user,socket)            
+                    sender(self,"finish","",socket)
 
                 elif operation == "gettweets":
                     #server message
@@ -182,12 +184,13 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     for tweet in users[user]:
                         sender(self,"gettweets",tweets[tweet],socket)  
                     print(write("true", "gettweets", "null", "null", "null", "null", "null", 0, len(users[user])))
+                    sender(self,"finish","",socket)
 
                 elif operation == "exit":
                     #server message
                     print(read(user,"null","null","exit"))
                     exit(user)
-                    # sender(self,"exit","bye bye",socket)
+                    sender(self,"exit","",socket)
 
                 else:
                     print("wrong command")

@@ -9,6 +9,7 @@ clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 input_queue = queue.Queue()
 address = None
 user = ""
+pause = False
 
 class userInput(object):
     """ Threading example class
@@ -47,6 +48,9 @@ class userInput(object):
                 except ConnectionResetError:
                     os._exit(1)
                 os._exit(1)
+
+            except EOFError:
+                pass
 
 class receive(object):
     """ Threading example class
@@ -89,16 +93,22 @@ class receive(object):
             elif t == "unsubscribe":
                 print(d)
             elif t == "gettweets":
+                pause = True
                 print(d)
             elif t == "getusers":
+                pause = True
                 print(d)
             elif t == "timeline":
+                pause = True
                 print(d)
             elif t == "exit":
                 print("bye bye")
                 os._exit(1)
             elif t == "error":
                 print(d)
+            elif t == "finish":
+                print()
+                pause = False
             else:
                 pass
 
@@ -225,7 +235,7 @@ def main(argv):
     #print("type whatever you want")
     # inputList = []
 
-    while True:
+    while not pause:
         try:
             line = input_queue.get_nowait()
             # if x:
@@ -265,8 +275,6 @@ def main(argv):
                 tmp = (op, None)
                 exitSend = pickle.dumps(tmp)
                 clientSocket.sendto(exitSend, address)
-                print("\nbye bye")
-                os._exit(1)
             # data = data_queue.get_nowait()
             # print(data)
             else:
