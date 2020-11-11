@@ -292,7 +292,7 @@ class judge:
         try:
             p.stdin.write(cmd.encode())
             p.stdin.flush()
-            time.sleep(0.1)
+            time.sleep(1)
         except Exception as e:
             print(e)
             self.file.write('error happens\n')
@@ -338,7 +338,7 @@ class judge:
         time.sleep(1)
         self.file.write('run command on server: '+ self.run[type] + name + ' ' + str(port) + '\n')
         self.file.flush()
-        time.sleep(0.1)
+        time.sleep(1)
         return p
 
 
