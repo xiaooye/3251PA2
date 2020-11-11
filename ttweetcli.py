@@ -42,7 +42,10 @@ class userInput(object):
             except KeyboardInterrupt:
                 op = {'user': user, 'msg': None, 'operation': "exit"}
                 exitSend = pickle.dumps((op, None))
-                clientSocket.sendto(exitSend, address)
+                try:
+                    clientSocket.sendto(exitSend, address)
+                except ConnectionResetError:
+                    os._exit(1)
                 os._exit(1)
 
 class receive(object):
@@ -274,7 +277,10 @@ def main(argv):
         except KeyboardInterrupt:
             op = {'user': user, 'msg': None, 'operation': "exit"}
             exitSend = pickle.dumps((op, None))
-            clientSocket.sendto(exitSend, address)
+            try:
+                clientSocket.sendto(exitSend, address)
+            except ConnectionResetError:
+                os._exit(1)
             os._exit(1)
    
     clientSocket.close()

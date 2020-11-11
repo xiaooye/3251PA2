@@ -30,6 +30,7 @@ def spellingcheck():
         sys.exit("Value for server port exceeds limit")
 
 def exit(user):
+    #we will collect all tweets anonymously with no user tag (but we also store the sender in the body of each tweet XD)
     users.pop(user)
     for x in hashtags:
         if user in hashtags[x]:
@@ -43,6 +44,10 @@ def read(user,message,hashtag,operation):
 
 def write(success,type,error,tweetMsg,hashTags,sender,notification,usernames,historyMessages):
     return "server write: TweetResponse{success='" + success + "', type='"+ type +"', error='" + error +"', tweetMsg='"+tweetMsg+"', hashTags='" + hashTags + "', sender='"+sender+"', notification='"+notification+"', usernames="+ str(usernames) +", historyMessages="+ str(historyMessages) +"}"
+
+def sender(self,type,data,socket):
+    resp = pickle.dumps((type,data))
+    socket.sendto(resp,self.client_address)
 
 class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -65,18 +70,15 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
 
                 #check if user exists
                 if user in users:
-                    resp = pickle.dumps(('duplicate',""))
-                    socket.sendto(resp,self.client_address)
+                    sender(self,"duplicate","",socket)
                 elif user == "":
-                    resp = pickle.dumps(("uerror","error: username has wrong format, connection refused."))
-                    socket.sendto(resp, self.client_address)
+                    sender(self,"uerror","error: username has wrong format, connection refused.",socket)
                 else:
                     users[user] = set()
                     subcount[user] = 0
                     threads[user] = self.client_address
                     timeline[user] = []
-                    resp = pickle.dumps(("init", 'username legal, connection established'))
-                    socket.sendto(resp, self.client_address)
+                    sender(self,"init","username legal, connection established",socket)
                 
             else:
                 d = data[0]
@@ -119,8 +121,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         msg = pickle.dumps(("receive", user_msg))
                         socket.sendto(msg,threads[user])
                     
-                    resp = pickle.dumps(("tweet", ""))
-                    socket.sendto(resp,self.client_address)
+                    sender(self,"tweet","",socket)
                     print(write("true", "tweet", "null", message , has , user , "null", 0, 0))
 
                 #operation
@@ -133,9 +134,8 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         #check if reach limit
                         if subcount[user] >= 3:
                             mess = 'operation failed: sub #' + hash + ' failed, already exists or exceeds 3 limitation'
-                            resp = pickle.dumps(("error", mess))
+                            sender(self,"error",mess,socket)
                             print(write("false", "subscribe", mess , "null", "null", "null", "null", 0, 0))
-                            socket.sendto(resp,self.client_address)
                             break
                         else:
                             subcount[user] += 1
@@ -147,18 +147,15 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                                     hashtags[hash].add(user)
                                 else:
                                     mess = 'operation failed: sub #' + hash + ' failed, already exists or exceeds 3 limitation'
-                                    resp = pickle.dumps(("error", mess))
+                                    sender(self,"error",mess,socket)
                                     print(write("false", "subscribe", "null", "null", "null", "null", "null", 0, 0))
-                                    socket.sendto(resp,self.client_address)
                                     break
-                        resp = pickle.dumps(("subscribe", "operation success"))
-                        socket.sendto(resp,self.client_address)
+                        sender(self,"subscribe","operation success",socket)
                         print(write("true", "subscribe", "null", "null", "null", "null", "null", 0, 0))
 
                 elif operation == "unsubscribe":
                     #server message
                     print(read(user,"null",str(hashtag),"unsubscribe"))
-                    finish = True
                     #iterate through hashtags
                     for hash in hashtag:
                         try:
@@ -166,45 +163,37 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         except KeyError:
                             pass
 
-                    if finish:
-                        resp = pickle.dumps(("unsubscribe", "operation success"))
-                        socket.sendto(resp,self.client_address)
-                        print(write("true", "unsubscribe", "null", "null", "null", "null", "null", 0, 0))                      
+                    sender(self,"unsubscribe","operation success",socket)
+                    print(write("true", "unsubscribe", "null", "null", "null", "null", "null", 0, 0))                      
                 
                 elif operation == "timeline":
                     #server message
                     print(read(user,"null","null","timeline"))
                     for tweet in timeline[user]:
-                        tl = pickle.dumps(("timeline", tweets[tweet]))
-                        socket.sendto(tl,self.client_address)
-
+                        sender(self,"timeline",tweets[tweet],socket)
 
                 elif operation == "getusers":
                     #server message
                     print(read(user,"null","null","getusers"))
                     for user in users:
-                        us = pickle.dumps(("getusers",user))
-                        socket.sendto(us,self.client_address)                 
+                        sender(self,"getusers",user,socket)            
 
                 elif operation == "gettweets":
                     #server message
                     print(read(user,"null","null","gettweets"))
-                    gett = []
                     for tweet in users[user]:
-                        gett = pickle.dumps(("gettweets", tweets[tweet]))
-                        socket.sendto(gett,self.client_address)
-                    print(write("true", "gettweets", "null", "null", "null", "null", "null", 0, len(gett)))
+                        sender(self,"gettweets",tweets[tweet],socket)  
+                    print(write("true", "gettweets", "null", "null", "null", "null", "null", 0, len(users[user])))
 
                 elif operation == "exit":
                     #server message
                     print(read(user,"null","null","exit"))
                     exit(user)
-                    resp = pickle.dumps(("exit", "bye bye"))
-                    socket.sendto(resp,self.client_address)                    
+                    sender(self,"exit","bye bye",socket)                 
 
                 else:
                     print("wrong command")
-                    socket.sendto('error'.encode(),self.client_address)
+                    sender(self,"error","wrong command",socket)
 
 class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
     pass
