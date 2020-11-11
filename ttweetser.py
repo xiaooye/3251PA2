@@ -67,6 +67,9 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                 if user in users:
                     resp = pickle.dumps(('duplicate',""))
                     socket.sendto(resp,self.client_address)
+                elif user == "":
+                    resp = pickle.dumps(("uerror","error: username has wrong format, connection refused."))
+                    socket.sendto(resp, self.client_address)
                 else:
                     users[user] = set()
                     subcount[user] = 0
@@ -171,30 +174,25 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                 elif operation == "timeline":
                     #server message
                     print(read(user,"null","null","timeline"))
-                    timelines = []
                     for tweet in timeline[user]:
-                        timelines.append(tweets[tweet])
-                    tl = pickle.dumps(("timeline", timelines))
-                    socket.sendto(tl,self.client_address)
+                        tl = pickle.dumps(("timeline", tweets[tweet]))
+                        socket.sendto(tl,self.client_address)
+
 
                 elif operation == "getusers":
                     #server message
                     print(read(user,"null","null","getusers"))
-                    us = []
                     for user in users:
-                        us.append(user)
-                    us = pickle.dumps(("getusers",us))
-                    socket.sendto(us,self.client_address)
-                    
+                        us = pickle.dumps(("getusers",user))
+                        socket.sendto(us,self.client_address)                 
 
                 elif operation == "gettweets":
                     #server message
                     print(read(user,"null","null","gettweets"))
                     gett = []
                     for tweet in users[user]:
-                        gett.append(tweets[tweet])
-                    gett = pickle.dumps(("gettweets", gett))
-                    socket.sendto(gett,self.client_address)
+                        gett = pickle.dumps(("gettweets", tweets[tweet]))
+                        socket.sendto(gett,self.client_address)
                     print(write("true", "gettweets", "null", "null", "null", "null", "null", 0, len(gett)))
 
                 elif operation == "exit":

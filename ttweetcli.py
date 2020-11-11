@@ -30,14 +30,20 @@ class userInput(object):
         """ Method that runs forever """
         while True:
             # Do something
-            x = input()
-            if x == "exit":
+            try:
+                x = input()
+                if x == "exit":
+                    op = {'user': user, 'msg': None, 'operation': "exit"}
+                    exitSend = pickle.dumps((op, None))
+                    clientSocket.sendto(exitSend, address)
+                    print("bye bye")
+                    os._exit(1)
+                input_queue.put(x)
+            except KeyboardInterrupt:
                 op = {'user': user, 'msg': None, 'operation': "exit"}
                 exitSend = pickle.dumps((op, None))
                 clientSocket.sendto(exitSend, address)
-                print("bye bye")
                 os._exit(1)
-            input_queue.put(x)
 
 class receive(object):
     """ Threading example class
@@ -60,7 +66,7 @@ class receive(object):
         while True:
             # Do something
             try:
-                data = clientSocket.recv(1024)
+                data = clientSocket.recv(4096)
             except ConnectionResetError:
                 print("error")
                 os._exit(1)
@@ -68,24 +74,23 @@ class receive(object):
             if t == "duplicate":
                 print("error: username has wrong format, connection refused.")
                 os._exit(1)
+            elif t == "uerror":
+                print(d)
+                os._exit(1)
             elif t == "init":
                 print(d)
             elif t == "receive":
                 print(d)
             elif t == "subscribe":
                 print(d)
+            elif t == "unsubscribe":
+                print(d)
             elif t == "gettweets":
-                for tweet in d:
-                    print(tweet)
-                print()
+                print(d)
             elif t == "getusers":
-                for user in d:
-                    print(user)
-                print()
+                print(d)
             elif t == "timeline":
-                for tweet in d:
-                    print(tweet)
-                print()
+                print(d)
             elif t == "exit":
                 os._exit(1)
             elif t == "error":
@@ -111,12 +116,12 @@ def conenctionCheck(connection, argv):
     # error = False
     ##======================= number of parameter ==============
     if len(argv) != 4:
-        sys.exit("Wrong number of parameters: “error: args should contain <ServerIP> <ServerPort> <Username>")
-        sys.exit(1)
+        print("Wrong number of parameters: “error: args should contain <ServerIP> <ServerPort> <Username>")
+        os._exit(1)
     ## ================================= ip error ===============
     if valid_ip(argv[1]) == False:
         print("error: server ip invalid, connection refused.")
-        sys.exit(1)
+        os._exit(1)
     ## ================================ port error ===================
     ip = argv[1]
     port = int(argv[2])
@@ -198,11 +203,12 @@ def main(argv):
     port = int(argv[2])
     address = (ip,port)
     if not connection:
-        sys.exit(1)
+        os._exit(1)
     # ================check duplicate username from server==============
-    z = (user, 'yea')
-    y = pickle.dumps(z)
-    clientSocket.sendto(y,address)
+    else:
+        z = (user, 'yea')
+        y = pickle.dumps(z)
+        clientSocket.sendto(y,address)
     # ==========reply from server whether username is duplicated, 0 for duplicated, 1 otherwise==========
     # if recvMsg == "d":
     #     print("error: username has wrong format, connection refused.")
@@ -264,6 +270,12 @@ def main(argv):
 
         except queue.Empty:
             pass
+            
+        except KeyboardInterrupt:
+            op = {'user': user, 'msg': None, 'operation': "exit"}
+            exitSend = pickle.dumps((op, None))
+            clientSocket.sendto(exitSend, address)
+            os._exit(1)
    
     clientSocket.close()
 
