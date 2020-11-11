@@ -54,11 +54,14 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
         data = self.request[0]
         socket = self.request[1]
 
+        #if more than five users
         if len(threads) > MAX_CONN:
+        #if more than five connections
+        #if threading.active_count > MAX_CONN:
             socket.sendto('Off Limit!'.encode(),self.client_address)
         else:
             user = ''
-
+            cur_thread = threading.current_thread
             #unpack data
             data = pickle.loads(data)
             
