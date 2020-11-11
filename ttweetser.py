@@ -189,7 +189,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     #server message
                     print(read(user,"null","null","exit"))
                     exit(user)
-                    sender(self,"exit","bye bye",socket)                 
+                    # sender(self,"exit","bye bye",socket)
 
                 else:
                     print("wrong command")

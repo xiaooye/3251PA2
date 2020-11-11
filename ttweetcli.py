@@ -171,7 +171,7 @@ def tweet(line, op, connection):
         return 1
 
     if len(message) <= 0:
-        print("message format illegal, connection refused.")
+        print("message format illegal")
         return 1
     elif len(message) > 150:
         print("message length illegal, connection refused.")
@@ -261,12 +261,12 @@ def main(argv):
                 gettweetSend = pickle.dumps(tmp)
                 clientSocket.sendto(gettweetSend, address)
 
-            elif command == 'exit' and len(x) == 1:
-                tmp = (op, None)
-                exitSend = pickle.dumps(tmp)
-                clientSocket.sendto(exitSend, address)
-                print("bye bye")
-                os._exit(1)
+            # elif command == 'exit' and len(x) == 1:
+            #     tmp = (op, None)
+            #     exitSend = pickle.dumps(tmp)
+            #     clientSocket.sendto(exitSend, address)
+            #     print("bye bye")
+            #     os._exit(1)
             # data = data_queue.get_nowait()
             # print(data)
             else:
