@@ -131,7 +131,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         if subcount[user] >= 3:
                             mess = 'operation failed: sub #' + hash + ' failed, already exists or exceeds 3 limitation'
                             resp = pickle.dumps(("error", mess))
-                            print(write("false", "subscribe", "null", "null", "null", "null", "null", 0, 0))
+                            print(write("false", "subscribe", mess , "null", "null", "null", "null", 0, 0))
                             socket.sendto(resp,self.client_address)
                             break
                         else:
@@ -185,6 +185,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         us.append(user)
                     us = pickle.dumps(("getusers",us))
                     socket.sendto(us,self.client_address)
+                    
 
                 elif operation == "gettweets":
                     #server message
