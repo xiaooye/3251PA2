@@ -8,8 +8,8 @@ BUFFER_SIZE = 4096
 MAX_CONN = 6
 hashtags = {'ALL':set()}
 threads = {}
-users = {}
 timeline = {}
+users = {}
 subcount = {}
 tweets = {}
 
@@ -156,11 +156,11 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                 elif operation == "timeline":
                     #server message
                     print(read(user,"null","null","timeline"))
-                    timeline = []
+                    timelines = []
                     for tweet in timeline[user]:
-                        timeline.append(tweets[tweets])
-                    timeline = pickle.dumps(timeline)
-                    socket.sendto(timeline,self.client_address)
+                        timelines.append(tweets[tweets])
+                    tl = pickle.dumps(timeline)
+                    socket.sendto(tl,self.client_address)
 
                 elif operation == "getuser":
                     #server message
