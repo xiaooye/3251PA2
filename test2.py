@@ -16,11 +16,6 @@ clientSocket.sendto(y,add)
 
 data_queue = queue.Queue()
 
-def receiver():
-    data = clientSocket.recv(1024)
-    print(data)
-    print("listening....")
-    data_queue.put(data)
 
 class ThreadingExample(object):
     """ Threading example class
@@ -54,6 +49,8 @@ while True:
         data = data_queue.get_nowait()
         print(data)
     except queue.Empty:
+        val = input("Enter your value: ") 
+        print(val)
         if count < 3:
             clientSocket.sendto(y,add)
             count += 1

@@ -22,9 +22,12 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
         data = self.request[0]
         socket = self.request[1]
         print(data)
-        message = "data yeah"
-        print(message)
-        socket.sendto(message.encode(), self.client_address)
+        count = 0
+        while count < 3:
+            message = "data yeah" + str(count)
+            print(message)
+            socket.sendto(message.encode(), self.client_address)
+            count += 1
 
 class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
     pass
