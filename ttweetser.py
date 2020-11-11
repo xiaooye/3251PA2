@@ -74,7 +74,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                 elif user == "":
                     sender(self,"uerror","error: username has wrong format, connection refused.",socket)
                 else:
-                    users[user] = set()
+                    users[user] = []
                     subcount[user] = 0
                     threads[user] = self.client_address
                     timeline[user] = []
@@ -99,7 +99,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     tweets[index] = send_msg
 
                     #add to sent history
-                    users[user].add(index)
+                    users[user].append(index)
                     
                     #server message
                     print(read(user,message,str(hashtag),"tweet"))

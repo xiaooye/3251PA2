@@ -268,7 +268,7 @@ def main(argv):
                 clientSocket.sendto(getuserSend, address)
 
             elif command == 'gettweets' and len(x) == 2:
-                op['user'] = argv[1]
+                op['msg'] = x[1]
                 tmp = (op, None)
                 gettweetSend = pickle.dumps(tmp)
                 clientSocket.sendto(gettweetSend, address)
