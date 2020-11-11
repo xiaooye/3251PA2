@@ -59,7 +59,11 @@ class receive(object):
         """ Method that runs forever """
         while True:
             # Do something
-            data = clientSocket.recv(1024)
+            try:
+                data = clientSocket.recv(1024)
+            except ConnectionResetError:
+                print("error")
+                os._exit(1)
             t, d = pickle.loads(data)
             if t == "duplicate":
                 print("error: username has wrong format, connection refused.")
