@@ -116,6 +116,8 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                         msg = pickle.dumps(("receive", user_msg))
                         socket.sendto(msg,threads[user])
                     
+                    # resp = pickle.dumps(("tweet", ""))
+                    # socket.sendto(resp,self.client_address)
                     print(write("true", "tweet", "null", message , has , user , "null", 0, 0))
 
                 #operation
@@ -180,7 +182,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     gett = []
                     for tweet in users[user]:
                         gett.append(tweets[tweet])
-                    gett = pickle.dumps(gett)
+                    gett = pickle.dumps(("gettweets", gett))
                     socket.sendto(gett,self.client_address)
                     print(write("true", "gettweets", "null", "null", "null", "null", "null", 0, len(gett)))
 

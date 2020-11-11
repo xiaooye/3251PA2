@@ -7,8 +7,8 @@ import queue
 
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 input_queue = queue.Queue()
-
-
+address = None
+user = ""
 
 class userInput(object):
     """ Threading example class
@@ -32,6 +32,10 @@ class userInput(object):
             # Do something
             x = input()
             if x == "exit":
+                op = {'user': user, 'msg': None, 'operation': "exit"}
+                exitSend = pickle.dumps((op, None))
+                clientSocket.sendto(exitSend, address)
+                print("bye bye")
                 os._exit(1)
             input_queue.put(x)
 
@@ -66,11 +70,15 @@ class receive(object):
                 print(d)
             elif t == "subscribe":
                 print(d)
+            elif t == "gettweets":
+                for tweet in d:
+                    print(tweet)
             elif t == "exit":
                 os._exit(1)
             else:
                 print(d)
-
+                
+            print()
 # ==============ip address check for validation===========================
 def valid_ip(host):
     ip_arr = host.split('.')
@@ -127,7 +135,7 @@ def tagChecker(hashtag):
     return tagList
 
 
-def tweet(line, op, connection,address):
+def tweet(line, op, connection):
 
     list = line.split("\"")
     message = list[1]
@@ -153,7 +161,7 @@ def tweet(line, op, connection,address):
 
 
 # =====================for both subscribe and unsubscribe========================
-def subscribe(command, hashtag, op, connection,address):
+def subscribe(command, hashtag, op, connection):
     hashtag = filter(None,hashtag.strip().split("#"))
     tagList = tagChecker(hashtag)
     if not tagList:
@@ -166,6 +174,8 @@ def subscribe(command, hashtag, op, connection,address):
 
 
 def main(argv):
+    global address
+    global user
     user = argv[3]
     op = {'user': None, 'msg': None, 'operation': None}
     # ================ check connection error ====================
@@ -202,13 +212,13 @@ def main(argv):
             op['user'] = user
             if command == 'tweet':
                 # ==========tweet return 1 for error 0 otherwise==================
-                y = tweet(line, op, clientSocket, address)
+                y = tweet(line, op, clientSocket)
 
             elif command == 'subscribe' and len(x) == 2:
-                y = subscribe(command, x[1], op, clientSocket, address)
+                y = subscribe(command, x[1], op, clientSocket)
 
             elif command == 'unsubscribe' and len(x) == 2:
-                y = subscribe(command, x[1], op, clientSocket, address)
+                y = subscribe(command, x[1], op, clientSocket)
 
             elif command == 'timeline' and len(x) == 1:
                 tmp = (op, None)
