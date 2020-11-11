@@ -109,7 +109,6 @@ class receive(object):
             elif t == "error":
                 print(d)
             elif t == "finish":
-                print()
                 pause = False
             else:
                 pass
@@ -183,7 +182,7 @@ def tweet(line, op, connection):
         return 1
 
     if len(message) <= 0:
-        print("message format illegal")
+        print("message format illegal.")
         return 1
     elif len(message) > 150:
         print("message length illegal, connection refused.")

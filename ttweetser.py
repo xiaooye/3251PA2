@@ -78,7 +78,7 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                     subcount[user] = 0
                     threads[user] = self.client_address
                     timeline[user] = []
-                    sender(self,"init","username legal, connection established",socket)
+                    sender(self,"init","username legal, connection established.",socket)
                 
             else:
                 d = data[0]
