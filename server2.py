@@ -164,8 +164,8 @@ class ThreadedUDPRequestHandler(socketserver.BaseRequestHandler):
                             pass
 
                     if finish:
-                        resp = pickle.dumps(("unsubscribe"))
-                        socket.sendto(,self.client_address)
+                        resp = pickle.dumps(("unsubscribe", "operation success"))
+                        socket.sendto(resp,self.client_address)
                         print(write("true", "unsubscribe", "null", "null", "null", "null", "null", 0, 0))                      
                 
                 elif operation == "timeline":
