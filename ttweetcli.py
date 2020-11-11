@@ -10,6 +10,7 @@ input_queue = queue.Queue()
 address = None
 user = ""
 pause = False
+msgList = []
 
 class userInput(object):
     """ Threading example class
@@ -87,6 +88,7 @@ class receive(object):
             elif t == "init":
                 print(d)
             elif t == "receive":
+                msgList.append(d)
                 print(d)
             elif t == "subscribe":
                 print(d)
@@ -255,9 +257,8 @@ def main(argv):
                 y = subscribe(command, x[1], op, clientSocket)
 
             elif command == 'timeline' and len(x) == 1:
-                tmp = (op, None)
-                timelineSend = pickle.dumps(tmp)
-                clientSocket.sendto(timelineSend, address)
+                for msg in msgList:
+                    print(msg)
 
             elif command == 'getusers' and len(x) == 1:
                 # tmp = (command, user)
@@ -267,6 +268,7 @@ def main(argv):
                 clientSocket.sendto(getuserSend, address)
 
             elif command == 'gettweets' and len(x) == 2:
+                op['user'] = argv[1]
                 tmp = (op, None)
                 gettweetSend = pickle.dumps(tmp)
                 clientSocket.sendto(gettweetSend, address)
