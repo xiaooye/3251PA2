@@ -292,7 +292,7 @@ class judge:
         try:
             p.stdin.write(cmd.encode())
             p.stdin.flush()
-            time.sleep(0.2)
+            time.sleep(1)
         except Exception as e:
             print(e)
             self.file.write('error happens\n')
